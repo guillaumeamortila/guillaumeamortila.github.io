@@ -238,9 +238,9 @@ ath.removeSession = function (appID) {
 };
 
 ath.doLog = function (logStr) {
-	if ( this.options.logging ) {
+	//if ( this.options.logging ) {
 		console.log(logStr);
-	}
+	//}
 };
 
 ath.Class = function (options) {
