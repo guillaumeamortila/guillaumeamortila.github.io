@@ -217,6 +217,9 @@ ath.isTablet = (ath.isMobileSafari && _ua.indexOf('iPad') > -1) || (ath.isMobile
 
 ath.isCompatible = (ath.isMobileSafari && ath.OSVersion >= 6) || ath.isMobileChrome;	// TODO: add winphone
 
+alert(ath.OS);
+alert(ath.isCompatible);
+
 var _defaultSession = {
 	lastDisplayTime: 0,			// last time we displayed the message
 	returningVisitor: false,	// is this the first time you visit
@@ -238,9 +241,9 @@ ath.removeSession = function (appID) {
 };
 
 ath.doLog = function (logStr) {
-	//if ( this.options.logging ) {
+	if ( this.options.logging ) {
 		console.log(logStr);
-	//}
+	}
 };
 
 ath.Class = function (options) {
