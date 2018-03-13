@@ -203,12 +203,12 @@ _extend(ath, {
 	language: _nav.language && _nav.language.toLowerCase().replace('-', '_') || ''
 });
 
-alert(document.location.hash == '#ath' || _reSmartURL.test(document.location.href) || _reQueryString.test(document.location.search));
-alert(window.devicePixelRatio && window.devicePixelRatio > 1);
-alert((/iphone|ipod|ipad/i).test(_ua));
-alert(_ua.indexOf('Android') > -1 && (/Chrome\/[.0-9]*/).test(_ua) && _ua.indexOf("Version") == -1);
-alert( _ua.indexOf('Windows Phone') > -1);
-alert( _nav.language && _nav.language.toLowerCase().replace('-', '_') || '');
+// console.log(document.location.hash == '#ath' || _reSmartURL.test(document.location.href) || _reQueryString.test(document.location.search));
+// console.log(window.devicePixelRatio && window.devicePixelRatio > 1);
+// console.log((/iphone|ipod|ipad/i).test(_ua));
+// console.log(_ua.indexOf('Android') > -1 && (/Chrome\/[.0-9]*/).test(_ua) && _ua.indexOf("Version") == -1);
+// console.log( _ua.indexOf('Windows Phone') > -1);
+// console.log( _nav.language && _nav.language.toLowerCase().replace('-', '_') || '');
 
 // falls back to en_us if language is unsupported
 ath.language = ath.language && ath.language in ath.intl ? ath.language : 'en_us';
@@ -291,7 +291,7 @@ ath.Class = function (options) {
 	}
 
 	// the element the message will be appended to
-	this.container = document.getElementById('ctnr');
+	this.container = document.body;
 
 	// load session
 	this.session = this.getItem(this.options.appID);
@@ -347,7 +347,8 @@ ath.Class = function (options) {
 		console.log("Add to homescreen: not displaying callout because user opted out");
 		return;
 	}
-	if ( this.session.added ) {
+	// if ( this.session.added ) {
+	if ( false ) {
 		console.log("Add to homescreen: not displaying callout because already added to the homescreen");
 		return;
 	}
@@ -455,7 +456,7 @@ ath.Class.prototype = {
 		}
 	},
 
-	show: function (force) {
+	show: function (force = true) {
 		// in autostart mode wait for the document to be ready
 		if ( this.options.autostart && !_DOMReady ) {
 			setTimeout(this.show.bind(this), 50);
@@ -565,7 +566,6 @@ ath.Class.prototype = {
 
 		// attach all elements to the DOM
 		this.viewport.appendChild(this.element);
-		console.log(this.viewport);
 		this.container.appendChild(this.viewport);
 
 		// if we don't have to wait for an image to load, show the message right away
