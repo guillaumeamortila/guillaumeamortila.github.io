@@ -1,9 +1,17 @@
+/* Add to Homescreen v3.2.3 ~ (c) 2015 Matteo Spinelli ~ @license: http://cubiq.org/license */
 (function (window, document) {
+/*
+       _   _ _____     _____
+ ___ _| |_| |_   _|___|  |  |___ _____ ___ ___ ___ ___ ___ ___ ___
+| .'| . | . | | | | . |     | . |     | -_|_ -|  _|  _| -_| -_|   |
+|__,|___|___| |_| |___|__|__|___|_|_|_|___|___|___|_| |___|___|_|_|
+                              by Matteo Spinelli ~ http://cubiq.org
+*/
 
 // Check for addEventListener browser support (prevent errors in IE<9)
 var _eventListener = 'addEventListener' in window;
 
-// Check if document is loaded
+// Check if document is loaded, needed by autostart
 var _DOMReady = false;
 if ( document.readyState === 'complete' ) {
 	_DOMReady = true;
@@ -35,8 +43,8 @@ ath.intl = {
 		android: 'To add this web app to the home screen open the browser option menu and tap on <strong>Add to homescreen</strong>. <small>The menu can be accessed by pressing the menu hardware button if your device has one, or by tapping the top right menu icon %icon.</small>'
 	},
 	fr_fr: {
-		ios: 'Pour ajouter cette application web sur l\'écran d\'accueil : Appuyez sur %icon puis sélectionnez <strong>« Sur l\'écran d\'accueil »</strong>.',
-		android: 'Pour ajouter cette application web sur l\'écran d\'accueil : Appuyez sur le bouton <strong>« menu »</strong>, puis sur <strong>Ajouter sur l\'écran d\'accueil</strong>. <small>Le menu peut-être accessible en appuyant sur le bouton "menu" du téléphone s\'il en possède un <i class="fa fa-bars"></i>. Sinon, il se trouve probablement dans la coin supérieur droit du navigateur %icon.</small>'
+		ios: 'Pour ajouter cette application web sur l\'écran d\'accueil : Appuyez sur %icon et sélectionnez <strong>Sur l\'écran d\'accueil</strong>.',
+		android: 'Pour ajouter cette application web sur l\'écran d\'accueil : Appuyez sur le bouton "menu", puis sur <strong>Ajouter sur l\'écran d\'accueil</strong>. <small>Le menu peut-être accessible en appuyant sur le bouton "menu" du téléphone s\'il en possède un <i class="fa fa-bars"></i>. Sinon, il se trouve probablement dans la coin supérieur droit du navigateur %icon.</small>'
 	}
 };
 
@@ -47,18 +55,27 @@ for ( var lang in ath.intl ) {
 
 // default options
 ath.defaults = {
-	appID: 'kdor-pwa-ath',		// local storage name (no need to change)
+	appID: 'kdor-pwa-onhomescreen',		// local storage name (no need to change)
 	fontSize: 15,				// base font size, used to properly resize the popup based on viewport scale factor
 	debug: false,				// override browser checks
-	startDelay: 0,				// display the message after that many seconds from page load
+	logging: false,				// log reasons for showing or not showing to js console; defaults to true when debug is true
+	modal: false,				// prevent further actions until the message is closed
+	mandatory: false,			// you can't proceed if you don't add the app to the homescreen
+	autostart: true,			// show the message automatically
+	skipFirstVisit: false,		// show only to returning visitors (ie: skip the first time you visit)
+	startDelay: 1,				// display the message after that many seconds from page load
 	lifespan: 15,				// life of the message in seconds
-	displayPace: 0, 			// minutes before the message is shown again (0: display every time, default 24 hours)
+	displayPace: 1440,			// minutes before the message is shown again (0: display every time, default 24 hours)
+	maxDisplayCount: 0,			// absolute maximum number of times the message will be shown to the user (0: no limit)
 	icon: true,					// add touch icon to the message
 	message: '',				// the message can be customized
+	validLocation: [],			// list of pages where the message will be shown (array of regexes)
 	onInit: null,				// executed on instance creation
 	onShow: null,				// executed when the message is shown
 	onRemove: null,				// executed when the message is removed
 	onAdd: null,				// when the application is launched the first time from the homescreen (guesstimate)
+	onPrivate: null,			// executed if user is in private mode
+	privateModeOverride: false,	// show the message even in private mode (very rude)
 	detectHomescreen: false		// try to detect if the site has been added to the homescreen (false | true | 'hash' | 'queryString' | 'smartURL')
 };
 
@@ -90,8 +107,8 @@ ath.isStandalone = 'standalone' in window.navigator && window.navigator.standalo
 ath.isTablet = (ath.isMobileSafari && _ua.indexOf('iPad') > -1) || (ath.isMobileChrome && _ua.indexOf('Mobile') < 0);
 // ath.isTablet = false;
 
-// ath.isCompatible = (ath.isMobileSafari && ath.OSVersion >= 6) || ath.isMobileChrome;	// TODO: add winphone
-ath.isCompatible = 	true;
+ath.isCompatible = (ath.isMobileSafari && ath.OSVersion >= 6) || ath.isMobileChrome;	// TODO: add winphone
+// ath.isCompatible = 	true;
 
 // alert(ath.OS);
 // alert(ath.isCompatible);
@@ -116,20 +133,22 @@ ath.removeSession = function (appID) {
 		// we are most likely in private mode
 	}
 };
-ath.doLog=function(logStr){
-	if(this.options.logging){
-		console.log(logStr);
-	}
-};
+
+// ath.doLog = function (logStr) {
+// 	if ( this.options.logging ) {
+// 		console.log(logStr);
+// 	}
+// };
+
 ath.Class = function (options) {
 	// class methods
-	this.doLog = ath.doLog;
+	// console.log = ath.doLog;
 
 	// merge default options with user config
 	this.options = _extend({}, ath.defaults);
 	_extend(this.options, options);
 	// override defaults that are dependent on each other
-	if ( this.options && this.options.debug ) {
+	if ( this.options && this.options.debug && (typeof this.options.logging === "undefined") ) {
 		this.options.logging = true;
 	}
 
@@ -139,6 +158,11 @@ ath.Class = function (options) {
 	}
 
 	// normalize some options
+	this.options.mandatory = this.options.mandatory && ( 'standalone' in window.navigator || this.options.debug );
+	this.options.modal = this.options.modal || this.options.mandatory;
+	if ( this.options.mandatory ) {
+		this.options.startDelay = -0.5;		// make the popup hasty
+	}
 	this.options.detectHomescreen = this.options.detectHomescreen === true ? 'hash' : this.options.detectHomescreen;
 
 	// setup the debug environment
@@ -163,7 +187,7 @@ ath.Class = function (options) {
 
 	// the device is not supported
 	if ( !ath.isCompatible ) {
- 		this.doLog("Add to homescreen: not displaying callout because device not supported");
+ 		console.log("Add to homescreen: not displaying callout because device not supported");
 		return;
 	}
 
@@ -180,6 +204,19 @@ ath.Class = function (options) {
 	} catch (e) {
 		// we are most likely in private mode
 		ath.hasLocalStorage = false;
+
+		if ( this.options.onPrivate ) {
+			this.options.onPrivate.call(this);
+		}
+	}
+
+	// check if this is a valid location
+	var isValidLocation = !this.options.validLocation.length;
+	for ( var i = this.options.validLocation.length; i--; ) {
+		if ( this.options.validLocation[i].test(document.location.href) ) {
+			isValidLocation = true;
+			break;
+		}
 	}
 
 	// check compatibility with old versions of add to homescreen. Opt-out if an old session is found
@@ -189,11 +226,15 @@ ath.Class = function (options) {
 
 	// critical errors:
 	if ( this.session.optedout ) {
-		this.doLog("Add to homescreen: not displaying callout because user opted out");
+		console.log("Add to homescreen: not displaying callout because user opted out");
 		return;
 	}
 	if ( this.session.added ) {
-		this.doLog("Add to homescreen: not displaying callout because already added to the homescreen");
+		console.log("Add to homescreen: not displaying callout because already added to the homescreen");
+		return;
+	}
+	if ( !isValidLocation ) {
+		console.log("Add to homescreen: not displaying callout because not a valid location");
 		return;
 	}
 
@@ -209,7 +250,7 @@ ath.Class = function (options) {
 			}
 		}
 
-		this.doLog("Add to homescreen: not displaying callout because in standalone mode");
+		console.log("Add to homescreen: not displaying callout because in standalone mode");
 		return;
 	}
 
@@ -229,7 +270,7 @@ ath.Class = function (options) {
 				}
 			}
 
-			this.doLog("Add to homescreen: not displaying callout because URL has token, so we are likely coming from homescreen");
+			console.log("Add to homescreen: not displaying callout because URL has token, so we are likely coming from homescreen");
 			return;
 		}
 
@@ -247,6 +288,18 @@ ath.Class = function (options) {
 	if ( !this.session.returningVisitor ) {
 		this.session.returningVisitor = true;
 		this.updateSession();
+
+		// we do not show the message if this is your first visit
+		if ( this.options.skipFirstVisit ) {
+			console.log("Add to homescreen: not displaying callout because skipping first visit");
+			return;
+		}
+	}
+
+	// we do no show the message in private mode
+	if ( !this.options.privateModeOverride && !ath.hasLocalStorage ) {
+		console.log("Add to homescreen: not displaying callout because browser is in private mode");
+		return;
 	}
 
 	// all checks passed, ready to display
@@ -256,7 +309,10 @@ ath.Class = function (options) {
 		this.options.onInit.call(this);
 	}
 
-	this.show();
+	if ( this.options.autostart ) {
+		console.log("Add to homescreen: autostart displaying callout");
+		this.show();
+	}
 };
 
 ath.Class.prototype = {
@@ -282,8 +338,8 @@ ath.Class.prototype = {
 	},
 
 	show: function (force = true) {
-		// wait for the document to be read
-		if ( !_DOMReady ) {
+		// in autostart mode wait for the document to be ready
+		if ( this.options.autostart && !_DOMReady ) {
 			setTimeout(this.show.bind(this), 50);
 			// we are not displaying callout because DOM not ready, but don't log that because
 			// it would log too frequently
@@ -292,7 +348,7 @@ ath.Class.prototype = {
 
 		// message already on screen
 		if ( this.shown ) {
-			this.doLog("Add to homescreen: not displaying callout because already shown on screen");
+			console.log("Add to homescreen: not displaying callout because already shown on screen");
 			return;
 		}
 
@@ -300,9 +356,21 @@ ath.Class.prototype = {
 		var lastDisplayTime = this.session.lastDisplayTime;
 
 		if ( force !== true ) {
+			// this is needed if autostart is disabled and you programmatically call the show() method
+			if ( !this.ready ) {
+				console.log("Add to homescreen: not displaying callout because not ready");
+				return;
+			}
+
 			// we obey the display pace (prevent the message to popup too often)
 			if ( now - lastDisplayTime < this.options.displayPace * 60000 ) {
-				this.doLog("Add to homescreen: not displaying callout because displayed recently");
+				console.log("Add to homescreen: not displaying callout because displayed recently");
+				return;
+			}
+
+			// obey the maximum number of display count
+			if ( this.options.maxDisplayCount && this.session.displayCount >= this.options.maxDisplayCount ) {
+				console.log("Add to homescreen: not displaying callout because displayed too many times already");
 				return;
 			}
 		}
@@ -345,6 +413,12 @@ ath.Class.prototype = {
 		// create the message container
 		this.viewport = document.createElement('div');
 		this.viewport.className = 'ath-viewport';
+		if ( this.options.modal ) {
+			this.viewport.className += ' ath-modal';
+		}
+		if ( this.options.mandatory ) {
+			this.viewport.className += ' ath-mandatory';
+		}
 		this.viewport.style.position = 'absolute';
 
 		// create the actual message element
@@ -377,14 +451,14 @@ ath.Class.prototype = {
 
 		// if we don't have to wait for an image to load, show the message right away
 		if ( this.img ) {
-			this.doLog("Add to homescreen: not displaying callout because waiting for img to load");
+			console.log("Add to homescreen: not displaying callout because waiting for img to load");
 		} else {
 			this._delayedShow();
 		}
 	},
 
 	_delayedShow: function (e) {
-		setTimeout(this._show.bind(this), this.options.startDelay * 1000);
+		setTimeout(this._show.bind(this), this.options.startDelay * 1000 + 500);
 	},
 
 	_show: function () {
@@ -398,15 +472,22 @@ ath.Class.prototype = {
 		window.addEventListener('scroll', this, false);
 		window.addEventListener('orientationchange', this, false);
 
+		if ( this.options.modal ) {
+			// lock any other interaction
+			document.addEventListener('touchmove', this, true);
+		}
+
 		// Enable closing after 1 second
-		setTimeout(function () {
-			that.element.addEventListener('click', that, true);
-		}, 1000);
+		if ( !this.options.mandatory ) {
+			setTimeout(function () {
+				that.element.addEventListener('click', that, true);
+			}, 1000);
+		}
 
 		// kick the animation
 		setTimeout(function () {
-			that.element.style.webkitTransitionDuration = '0.8s';
-			that.element.style.transitionDuration = '0.8s';
+			that.element.style.webkitTransitionDuration = '1.2s';
+			that.element.style.transitionDuration = '1.2s';
 			that.element.style.webkitTransform = 'translate3d(0,0,0)';
 			that.element.style.transform = 'translate3d(0,0,0)';
 		}, 0);
