@@ -50,7 +50,7 @@ ath.defaults = {
 	appID: 'kdor-pwa-ath',		// local storage name (no need to change)
 	fontSize: 15,				// base font size, used to properly resize the popup based on viewport scale factor
 	debugnav: true,				// override browser checks
-	logging: true,				// activates the console logs
+	logging: false,				// activates the console logs
 	startDelay: 0,				// display the message after that many seconds from page load
 	lifespan: 15,				// life of the message in seconds
 	displayPace: 0, 			// minutes before the message is shown again (0: display every time, default 24 hours)
@@ -94,10 +94,11 @@ ath.isTablet = (ath.isMobileSafari && _ua.indexOf('iPad') > -1) || (ath.isMobile
 ath.isCompatible = (ath.isMobileSafari && ath.OSVersion >= 6) || ath.isMobileChrome;	// TODO: add winphone
 // ath.isCompatible = true;
 
-alert("os : "+ath.OS);
-alert("standalone : "+ath.isStandalone);
-alert("tablet : "+ath.isTablet);
-alert("compatible : "+ath.isCompatible);
+// debug on phone
+// alert("os : "+ath.OS);
+// alert("standalone : "+ath.isStandalone);
+// alert("tablet : "+ath.isTablet);
+// alert("compatible : "+ath.isCompatible);
 
 
 var _defaultSession = {
