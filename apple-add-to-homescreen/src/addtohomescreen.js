@@ -93,6 +93,12 @@ ath.isTablet = (ath.isMobileSafari && _ua.indexOf('iPad') > -1) || (ath.isMobile
 ath.isCompatible = (ath.isMobileSafari && ath.OSVersion >= 6) || ath.isMobileChrome;	// TODO: add winphone
 // ath.isCompatible = true;
 
+alert("os : "+ath.OS);
+alert("standalone : "+ath.isStandalone);
+alert("tablet : "+ath.isTablet);
+alert("compatible : "+ath.isCompatible);
+
+
 var _defaultSession = {
 	lastDisplayTime: 0,			// last time we displayed the message
 	returningVisitor: false,	// is this the first time you visit
