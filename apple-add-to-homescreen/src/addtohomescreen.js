@@ -50,7 +50,7 @@ ath.defaults = {
 	appID: 'kdor-pwa-ath',		// local storage name (no need to change)
 	fontSize: 15,				// base font size, used to properly resize the popup based on viewport scale factor
 	debugnav: true,				// override browser checks
-	logging: false,				// activates the console logs
+	logging: true,				// activates the console logs
 	startDelay: 0,				// display the message after that many seconds from page load
 	lifespan: 15,				// life of the message in seconds
 	displayPace: 0, 			// minutes before the message is shown again (0: display every time, default 24 hours)
