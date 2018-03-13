@@ -76,8 +76,9 @@ _extend(ath, {
 	language: _nav.language && _nav.language.toLowerCase().replace('-', '_') || ''
 });
 
-// falls back to french if language is unsupported
-ath.language = ath.language && ath.language in ath.intl ? ath.language : 'fr_fr';
+// default langage : french
+// ath.language = ath.language && ath.language in ath.intl ? ath.language : 'fr_fr';
+ath.language = 'fr_fr';
 
 ath.isMobileSafari = ath.isIDevice && _ua.indexOf('Safari') > -1 && _ua.indexOf('CriOS') < 0;
 ath.OS = ath.isIDevice ? 'ios' : ath.isMobileChrome ? 'android' : ath.isMobileIE ? 'windows' : 'unsupported';
@@ -410,8 +411,8 @@ ath.Class.prototype = {
 
 		// kick the animation
 		setTimeout(function () {
-			that.element.style.webkitTransitionDuration = '0.8s';
-			that.element.style.transitionDuration = '0.8s';
+			that.element.style.webkitTransitionDuration = '0.7s';
+			that.element.style.transitionDuration = '0.7s';
 			that.element.style.webkitTransform = 'translate3d(0,0,0)';
 			that.element.style.transform = 'translate3d(0,0,0)';
 		}, 0);
