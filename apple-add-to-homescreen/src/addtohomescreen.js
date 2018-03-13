@@ -90,8 +90,8 @@ ath.isStandalone = 'standalone' in window.navigator && window.navigator.standalo
 ath.isTablet = (ath.isMobileSafari && _ua.indexOf('iPad') > -1) || (ath.isMobileChrome && _ua.indexOf('Mobile') < 0);
 // ath.isTablet = false;
 
-// ath.isCompatible = (ath.isMobileSafari && ath.OSVersion >= 6) || ath.isMobileChrome;	// TODO: add winphone
-ath.isCompatible = 	true;
+ath.isCompatible = (ath.isMobileSafari && ath.OSVersion >= 6) || ath.isMobileChrome;	// TODO: add winphone
+// ath.isCompatible = true;
 
 // alert(ath.OS);
 // alert(ath.isCompatible);
