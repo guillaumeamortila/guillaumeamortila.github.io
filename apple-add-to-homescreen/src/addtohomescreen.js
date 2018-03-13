@@ -49,7 +49,7 @@ for ( var lang in ath.intl ) {
 ath.defaults = {
 	appID: 'kdor-pwa-ath',		// local storage name (no need to change)
 	fontSize: 15,				// base font size, used to properly resize the popup based on viewport scale factor
-	debug: false,				// override browser checks
+	debug: true,				// override browser checks
 	startDelay: 0,				// display the message after that many seconds from page load
 	lifespan: 15,				// life of the message in seconds
 	displayPace: 0, 			// minutes before the message is shown again (0: display every time, default 24 hours)
@@ -92,9 +92,6 @@ ath.isTablet = (ath.isMobileSafari && _ua.indexOf('iPad') > -1) || (ath.isMobile
 
 ath.isCompatible = (ath.isMobileSafari && ath.OSVersion >= 6) || ath.isMobileChrome;	// TODO: add winphone
 // ath.isCompatible = true;
-
-// alert(ath.OS);
-// alert(ath.isCompatible);
 
 var _defaultSession = {
 	lastDisplayTime: 0,			// last time we displayed the message
@@ -477,7 +474,7 @@ ath.Class.prototype = {
 
 		this.orientation = clientWidth > document.documentElement.clientHeight ? 'landscape' : 'portrait';
 
-		var screenWidth = ath.OS == 'ios' ? this.orientation == 'portrait' ? screen.width : (1.4 * screen.height) : screen.width;
+		var screenWidth = ath.OS == 'ios' ? this.orientation == 'portrait' ? screen.width : screen.height : screen.width;
 		this.scale = screen.width > clientWidth ? 1 : screenWidth / window.innerWidth;
 
 		this.element.style.fontSize = this.options.fontSize / this.scale + 'px';
