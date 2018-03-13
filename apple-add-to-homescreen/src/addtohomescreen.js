@@ -49,7 +49,8 @@ for ( var lang in ath.intl ) {
 ath.defaults = {
 	appID: 'kdor-pwa-ath',		// local storage name (no need to change)
 	fontSize: 15,				// base font size, used to properly resize the popup based on viewport scale factor
-	debug: true,				// override browser checks
+	debugnav: true,				// override browser checks
+	logging: false,				// activates the console logs
 	startDelay: 0,				// display the message after that many seconds from page load
 	lifespan: 15,				// life of the message in seconds
 	displayPace: 0, 			// minutes before the message is shown again (0: display every time, default 24 hours)
@@ -132,7 +133,7 @@ ath.Class = function (options) {
 	this.options = _extend({}, ath.defaults);
 	_extend(this.options, options);
 	// override defaults that are dependent on each other
-	if ( this.options && this.options.debug ) {
+	if ( this.options && this.options.logging ) {
 		this.options.logging = true;
 	}
 
@@ -145,9 +146,9 @@ ath.Class = function (options) {
 	this.options.detectHomescreen = this.options.detectHomescreen === true ? 'hash' : this.options.detectHomescreen;
 
 	// setup the debug environment
-	if ( this.options.debug ) {
+	if ( this.options.debugnav ) {
 		ath.isCompatible = true;
-		ath.OS = typeof this.options.debug == 'string' ? this.options.debug : ath.OS == 'unsupported' ? 'android' : ath.OS;
+		ath.OS = typeof this.options.debugnav == 'string' ? this.options.debugnav : ath.OS == 'unsupported' ? 'android' : ath.OS;
 		ath.OSVersion = ath.OS == 'ios' ? '8' : '4';
 	}
 
