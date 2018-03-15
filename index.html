@@ -177,8 +177,17 @@
   </div>
 
   <!-- Uncomment the line below when ready to test with fake data -->
-  <script src="scripts/app.js" async></script>
-
+  <!-- <script src="scripts/app.js" async></script> -->
+  <script type="text/javascript">
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('pwa-service-worker.js')
+        .then(function(reg){
+          console.log("Service Worker registered !");
+      }).catch(function(err) {
+          console.log("Service Worker not registered. Error : ", err)
+      });
+    }
+  </script>
   <script src="apple-add-to-homescreen/src/ath-kdor.js"></script>
   <!-- <script src="apple-add-to-homescreen/src/addtohomescreen.js"></script> -->
   <!-- <script>
